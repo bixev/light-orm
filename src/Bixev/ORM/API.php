@@ -30,6 +30,14 @@ class API
     }
 
     /**
+     * @param callable $databaseGetter function with databaseName as first argument. Has to return PDO instance
+     */
+    static public function setDatabaseGetter(callable $databaseGetter)
+    {
+        Database::setDatabaseGetter($databaseGetter);
+    }
+
+    /**
      * @var AbstractModel
      */
     protected $_className;

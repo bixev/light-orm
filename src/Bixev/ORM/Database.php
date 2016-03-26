@@ -11,6 +11,11 @@ class Database
     protected $_connector;
 
     /**
+     * @var callable
+     */
+    static protected $_databaseGetter;
+
+    /**
      * pseudo-singleton factory
      *
      * @param string $databaseName
@@ -25,9 +30,31 @@ class Database
         return static::$_instances[$databaseName];
     }
 
+    /**
+     * @param callable $databaseGetter function with databaseName as first argument. Has to return PDO instance
+     */
+    static public function setDatabaseGetter(callable $databaseGetter)
+    {
+        static::$_databaseGetter = $databaseGetter;
+    }
+
     protected function __construct($databaseName = null)
     {
-        $this->_connector = db($databaseName);
+        $this->_connector = $this->getDatabase($databaseName);
+    }
+
+    protected function getDatabase($databaseName = null)
+    {
+        $databaseGetter = static::$_databaseGetter;
+        if($databaseGetter===null){
+            throw new Exception('Database connector not initialized. Use \Bixev\ORM\Api::setDatabaseGetter() first');
+        }
+        $db = $databaseGetter($databaseName);
+        if (!($db instanceof \PDO)) {
+            throw new Exception('Database connector has to be a PDO instance');
+        }
+
+        return $db;
     }
 
     /**

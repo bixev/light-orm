@@ -20,8 +20,8 @@ abstract class AbstractModel implements \ArrayAccess
 
     /**
      * available fields
-     * = array ( 'FIELDNAME' => array ( 'type'=>'TYPE', size=>'SIZE'))
-     * type : bool | int | str | float | date | dateTime | time | nullint | nullstr
+     * array of 'FIELDNAME' => ['type'=>'TYPE', size=>'SIZE']
+     * type : bool | int | str | float | date | dateTime | time
      * size : integer (0 for no limit), if type=float size is string "int,int"
      *
      * @var array
