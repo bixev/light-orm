@@ -1,5 +1,5 @@
 {
-  "name": "bixev/orm",
+  "name": "bixev/light-orm",
   "description": "Bixev light object relationship manager",
   "license": "MIT",
   "type": "library",
