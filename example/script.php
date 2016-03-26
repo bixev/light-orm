@@ -1,5 +1,5 @@
 <?php
-$exampleRepository = \Bixev\ORM\Api::get('Example');
+$exampleRepository = \Bixev\ORM\API::get('Example');
 
 // create record
 $example = $exampleRepository->createNew();

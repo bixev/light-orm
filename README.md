@@ -25,7 +25,7 @@ require 'vendor/autoload.php';
 Initialise database with your own
 
 ```php
-\Bixev\ORM\Api::setDatabaseGetter(function($databaseName){
+\Bixev\ORM\API::setDatabaseGetter(function($databaseName){
     $db = new \PDO('');
     return $db;
 });
@@ -38,7 +38,7 @@ Initialise database with your own
 Get repository to manipulate objects
 
 ```php
-$exampleRepository = \Bixev\ORM\Api::get('Example');
+$exampleRepository = \Bixev\ORM\API::get('Example');
 ```
 
 ## Create one object and store it into database

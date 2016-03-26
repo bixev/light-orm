@@ -47,7 +47,7 @@ class Database
     {
         $databaseGetter = static::$_databaseGetter;
         if($databaseGetter===null){
-            throw new Exception('Database connector not initialized. Use \Bixev\ORM\Api::setDatabaseGetter() first');
+            throw new Exception('Database connector not initialized. Use \Bixev\ORM\API::setDatabaseGetter() first');
         }
         $db = $databaseGetter($databaseName);
         if (!($db instanceof \PDO)) {
