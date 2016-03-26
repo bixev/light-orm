@@ -22,7 +22,7 @@ require 'vendor/autoload.php';
 
 ## Multiple databases
 
-Initialise database with your own
+Initialise database with your own. `$databaseName` is null by default. You can override it in the model classes
 
 ```php
 \Bixev\ORM\API::setDatabaseGetter(function($databaseName){
