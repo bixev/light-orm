@@ -1,0 +1,15 @@
+{
+  "name": "bixev/orm",
+  "description": "Bixev light object relationship manager",
+  "license": "MIT",
+  "type": "library",
+  "require": {
+    "php": ">=5.3",
+    "bixev/light-logger": ">=1.0.0"
+  },
+  "autoload": {
+    "psr-0": {
+      "Bixev\\ORM\\": "src/"
+    }
+  }
+}
