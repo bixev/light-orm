@@ -46,8 +46,8 @@ class Check
         if (!class_exists($recordClass)) {
             return $this->getCheckResult($recordClass, false, 'class not found');
         }
-        if (!is_subclass_of($recordClass, '\Bixev\ORM\Record')) {
-            return $this->getCheckResult($recordClass, false, 'class is NOT a subclassof \Bixev\ORM\Record');
+        if (!is_subclass_of($recordClass, '\Bixev\ORM\AbstractModel')) {
+            return $this->getCheckResult($recordClass, false, 'class is NOT a subclassof \Bixev\ORM\AbstractModel');
         }
 
         $classErrors = $this->checkFieldList($recordClass);
@@ -94,7 +94,7 @@ class Check
     protected function tableExists($databaseName, $tableName)
     {
         try {
-            $rows = Database::get($databaseName)->query("SHOW TABLES LIKE '" . Database::get($databaseName)->p($tableName) . "'")->fetchAll();
+            $rows = \Bixev\ORM\Database::get($databaseName)->getConnector()->query("SHOW TABLES LIKE '" . Database::get($databaseName)->p($tableName) . "'")->fetchAll();
 
             return count($rows) == 1;
         } catch (\Exception $e) {
@@ -115,8 +115,8 @@ class Check
             return false;
         }
         try {
-            $sql = "SHOW COLUMNS FROM " . Database::get($database)->backquote($tableName) . " LIKE " . Database::get($database)->quote($fieldName);
-            $fields = Database::get($database)->query($sql)->fetchAll();
+            $sql = "SHOW COLUMNS FROM " . Database::get($database)->backquote($tableName) . " LIKE " . Database::get($database)->getConnector()->quote($fieldName);
+            $fields = Database::get($database)->getConnector()->query($sql)->fetchAll();
 
             return count($fields) != 0;
         } catch (\Exception $e) {
@@ -128,7 +128,7 @@ class Check
      * @param AbstractModel $className
      * @return array
      */
-    final protected function checkFieldList(AbstractModel $className)
+    final protected function checkFieldList($className)
     {
 
         $errors = [];
@@ -144,8 +144,6 @@ class Check
             $errors[] = "undefined field list";
         } elseif (!is_array($fieldList)) {
             $errors[] = "field list is not an array";
-        } elseif (!count($fieldList)) {
-            $errors[] = "empty field list";
         } else {
             foreach ($fieldList as $fieldName => $fieldInfos) {
                 if (!is_string($fieldName) || strlen($fieldName) == 0) {
@@ -177,8 +175,6 @@ class Check
             $errors[] = "undefined relation list";
         } elseif (!is_array($relationList)) {
             $errors[] = "relation list is not an array";
-        } elseif (!count($relationList)) {
-            $errors[] = "empty relation list";
         } else {
             foreach ($relationList as $relation) {
                 if (!isset($relation['field'])) {
@@ -190,7 +186,7 @@ class Check
                 if (!isset($fieldList[$relation['field']])) {
                     $errors[] = "unknown field name in relation " . $relation['field'];
                 }
-                if (!is_subclass_of($relation['class'], __CLASS__)) {
+                if (!is_subclass_of($relation['class'], '\Bixev\ORM\AbstractModel')) {
                     $errors[] = "relation is not a model " . $relation['class'];
                 }
             }

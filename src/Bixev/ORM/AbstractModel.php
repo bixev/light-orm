@@ -208,7 +208,7 @@ abstract class AbstractModel implements \ArrayAccess
             throw new Exception("Error while inserting record in database");
         } else {
             if ($insert_id == 0) {
-                $insert_id = Database::get($this->getDatabaseName())->lastInsertId();
+                $insert_id = Database::get($this->getDatabaseName())->getConnector()->lastInsertId();
             }
             $this->id = (int)$insert_id;
 
@@ -233,7 +233,7 @@ abstract class AbstractModel implements \ArrayAccess
             }
         }
 
-        $id = Database::get($this->getDatabaseName())->U(static::$table, $fields, $this->getId());
+        Database::get($this->getDatabaseName())->U(static::$table, $fields, $this->getId());
 
         return $this->id;
     }
@@ -290,7 +290,7 @@ abstract class AbstractModel implements \ArrayAccess
             $fields .= '`' . $fieldName . '`';
         }
         $sql = "SELECT " . $fields . " FROM " . Database::get($this->getDatabaseName())->backquote(static::$table) . " WHERE id = " . intval($id);
-        $row = Database::get($this->getDatabaseName())->query($sql)->fetch();
+        $row = Database::get($this->getDatabaseName())->getConnector()->query($sql)->fetch();
 
         if ($row == '' || !count($row)) {
             throw new Exception("no record with id=" . $id . " on table " . static::$table);
@@ -474,7 +474,7 @@ abstract class AbstractModel implements \ArrayAccess
 
     /**
      * @param $fieldName
-     * @return Record|bool|null
+     * @return mixed|null
      * @throws Exception
      */
     final public function __get($fieldName)
@@ -560,7 +560,7 @@ abstract class AbstractModel implements \ArrayAccess
 
     /**
      * @param $fieldName
-     * @return Record|bool|null
+     * @return mixed|null
      */
     final public function getOldValue($fieldName)
     {

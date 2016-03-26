@@ -14,7 +14,7 @@ class Database
      * pseudo-singleton factory
      *
      * @param string $databaseName
-     * @return mixed
+     * @return Database
      */
     static public function get($databaseName = null)
     {
@@ -28,6 +28,14 @@ class Database
     protected function __construct($databaseName = null)
     {
         $this->_connector = db($databaseName);
+    }
+
+    /**
+     * @return \Bixev\Rest\Database\Connector|\PDO
+     */
+    public function getConnector()
+    {
+        return $this->_connector;
     }
 
     public function backquote($str)

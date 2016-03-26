@@ -17,6 +17,7 @@ class API
      * pseudo-singleton factory
      *
      * @param string $className
+     * @param \Bixev\LightLogger\LoggerInterface $logger
      * @return \Bixev\ORM\API
      */
     public static function get($className, \Bixev\LightLogger\LoggerInterface $logger = null)
@@ -116,7 +117,7 @@ class API
                                 $v = (float)$value['value'];
                                 break;
                             default:
-                                $v = Database::get($this->getDatabaseName())->quote($value['value']);
+                                $v = Database::get($this->getDatabaseName())->getConnector()->quote($value['value']);
                                 break;
                         }
                         $conditionSql .= ' ' . $v;
@@ -133,7 +134,7 @@ class API
                                 $v = (float)$v;
                                 break;
                             default:
-                                $v = Database::get($this->getDatabaseName())->quote($v);
+                                $v = Database::get($this->getDatabaseName())->getConnector()->quote($v);
                                 break;
                         }
                         $valuesSql .= $v;
@@ -149,7 +150,7 @@ class API
                         $v = (float)$value;
                         break;
                     default:
-                        $v = Database::get($this->getDatabaseName())->quote($value);
+                        $v = Database::get($this->getDatabaseName())->getConnector()->quote($value);
                         break;
                 }
                 $conditionSql .= " = " . $v;
@@ -185,12 +186,12 @@ class API
             . $limitSql;
 
         if ($onlyCount) {
-            $row = Database::get($this->getDatabaseName())->query($sql)->fetch();
+            $row = Database::get($this->getDatabaseName())->getConnector()->query($sql)->fetch();
 
             return $row['count_id'];
         } else {
             // On récupère les infos
-            $rows = Database::get($this->getDatabaseName())->query($sql)->fetchAll();
+            $rows = Database::get($this->getDatabaseName())->getConnector()->query($sql)->fetchAll();
 
             $collection = $this->newCollection($rows);
 
