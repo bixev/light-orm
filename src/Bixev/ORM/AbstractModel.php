@@ -281,7 +281,7 @@ abstract class AbstractModel implements \ArrayAccess
     {
 
         if (static::$table == '') {
-            throw new Exception("loadFromId : aucune table définie pour charger l'objet");
+            throw new Exception("Empty table");
         }
         $this->id = $id;
         $fields = '';
@@ -317,18 +317,14 @@ abstract class AbstractModel implements \ArrayAccess
             if (!array_key_exists($fieldName, $row)) {
                 throw new Exception("missing field on row : " . $fieldName);
             } else {
-                if ($fieldInfos['type'] == 'int') {
+                if ($row[$fieldName] === null) {
+                    $this->fieldValues[$fieldName] = null;
+                } elseif ($fieldInfos['type'] == 'int') {
                     $this->fieldValues[$fieldName] = (int)$row[$fieldName];
                 } elseif ($fieldInfos['type'] == 'float') {
                     $this->fieldValues[$fieldName] = (float)$row[$fieldName];
                 } elseif ($fieldInfos['type'] == 'bool') {
                     $this->fieldValues[$fieldName] = (bool)$row[$fieldName];
-                } elseif ($fieldInfos['type'] == 'int') {
-                    if ($row[$fieldName] === null) {
-                        $this->fieldValues[$fieldName] = null;
-                    } else {
-                        $this->fieldValues[$fieldName] = (int)$row[$fieldName];
-                    }
                 } else {
                     $this->fieldValues[$fieldName] = $row[$fieldName];
                 }
@@ -359,7 +355,7 @@ abstract class AbstractModel implements \ArrayAccess
                 throw new Exception("missing required field : " . $fieldName);
             } elseif (isset($this->fieldValues[$fieldName])) {
                 if ($fieldInfos['type'] == 'str' || $fieldInfos['type'] == 'string') {
-                    if (!is_string($this->fieldValues[$fieldName])) {
+                    if (!is_null($this->fieldValues[$fieldName]) && !is_string($this->fieldValues[$fieldName])) {
                         throw new Exception("wrong field type : " . $fieldName . " (expecting " . $fieldInfos['type'] . ") value : " . $this->fieldValues[$fieldName] . " (got " . gettype($this->fieldValues[$fieldName]) . ")");
                     } else {
                         if ($fieldInfos['required'] && strlen($this->fieldValues[$fieldName]) == 0) {
@@ -370,7 +366,7 @@ abstract class AbstractModel implements \ArrayAccess
                         }
                     }
                 } elseif ($fieldInfos['type'] == 'int') {
-                    if (!is_int($this->fieldValues[$fieldName])) {
+                    if (!is_null($this->fieldValues[$fieldName]) && !is_int($this->fieldValues[$fieldName])) {
                         throw new Exception("wrong field type : " . $fieldName . " (expecting " . $fieldInfos['type'] . ") value : " . $this->fieldValues[$fieldName] . " (got " . gettype($this->fieldValues[$fieldName]) . ")");
                     } elseif ($this->fieldValues[$fieldName] == 0 && $fieldInfos['required'] && $fieldName != 'id') {
                         throw new Exception("required field (int) : " . $fieldName . " (" . $fieldInfos['size'] . ")");
@@ -378,39 +374,51 @@ abstract class AbstractModel implements \ArrayAccess
                         throw new Exception("too long field (int) : " . $fieldName . " (" . $fieldInfos['size'] . ")");
                     }
                 } elseif ($fieldInfos['type'] == 'float') {
-                    if (!is_float($this->fieldValues[$fieldName])) {
+                    if (!is_null($this->fieldValues[$fieldName]) && !is_float($this->fieldValues[$fieldName])) {
                         throw new Exception("wrong field type : " . $fieldName . " (expecting " . $fieldInfos['type'] . ") value : " . $this->fieldValues[$fieldName] . " (got " . gettype($this->fieldValues[$fieldName]) . ")");
                     } elseif ($fieldInfos['size'] != 0) {
-                        $type_var = explode(',', $fieldInfos['size']);
-                        $var = explode('.', $this->fieldValues[$fieldName]);
-                        if (strlen($var[0]) > $type_var[0]) {
-                            throw new Exception("too long field (float, before comma) : " . $fieldName . " (" . $fieldInfos['size'] . ")");
-                        }
-                        if (isset($var[1]) && strlen($var[1]) > $type_var[1]) {
-                            throw new Exception("too long field (float, after comma) : " . $fieldName . " (" . $fieldInfos['size'] . ")");
+                        if (!is_null($this->fieldValues[$fieldName])) {
+                            $type_var = explode(',', $fieldInfos['size']);
+                            $var = explode('.', $this->fieldValues[$fieldName]);
+                            if (strlen($var[0]) > $type_var[0]) {
+                                throw new Exception("too long field (float, before comma) : " . $fieldName . " (" . $fieldInfos['size'] . ")");
+                            }
+                            if (isset($var[1]) && strlen($var[1]) > $type_var[1]) {
+                                throw new Exception("too long field (float, after comma) : " . $fieldName . " (" . $fieldInfos['size'] . ")");
+                            }
+                        } else {
+                            if ($fieldInfos['required']) {
+                                throw new Exception("required field (float) : " . $fieldName . " (" . $fieldInfos['size'] . ")");
+                            }
                         }
                     }
                 } elseif ($fieldInfos['type'] == 'bool') {
-                    if (!is_bool($this->fieldValues[$fieldName])) {
+                    if (!is_null($this->fieldValues[$fieldName]) && !is_bool($this->fieldValues[$fieldName])) {
                         throw new Exception("wrong field type : " . $fieldName . " (expecting " . $fieldInfos['type'] . ") value : " . $this->fieldValues[$fieldName] . " (got " . gettype($this->fieldValues[$fieldName]) . ")");
                     }
                 } elseif ($fieldInfos['type'] == 'date') {
-                    if (!is_string($this->fieldValues[$fieldName])) {
+                    if (!is_null($this->fieldValues[$fieldName]) && !is_string($this->fieldValues[$fieldName])) {
                         throw new Exception("wrong field type : " . $fieldName . " (expecting " . $fieldInfos['type'] . ") value : " . $this->fieldValues[$fieldName] . " (got " . gettype($this->fieldValues[$fieldName]) . ")");
-                    } elseif (preg_match('#[1-9][0-9]{3}-[1-12]-[1-31]#', $this->fieldValues[$fieldName]) === false) {
+                    } elseif (!is_null($this->fieldValues[$fieldName]) && preg_match('#[1-9][0-9]{3}-[1-12]-[1-31]#', $this->fieldValues[$fieldName]) === false) {
                         throw new Exception("field value does not match (date) : " . $fieldName);
+                    } elseif (is_null($this->fieldValues[$fieldName]) && $fieldInfos['required']) {
+                        throw new Exception("required field (float) : " . $fieldName . " (" . $fieldInfos['size'] . ")");
                     }
                 } elseif ($fieldInfos['type'] == 'dateTime') {
                     if (!is_string($this->fieldValues[$fieldName])) {
                         throw new Exception("wrong field type : " . $fieldName . " (expecting " . $fieldInfos['type'] . ") value : " . $this->fieldValues[$fieldName] . " (got " . gettype($this->fieldValues[$fieldName]) . ")");
-                    } elseif (preg_match('#[1-9][0-9]{3}-[1-12]-[1-31] [0-23]:[0-59]:[0-59]#', $this->fieldValues[$fieldName]) === false) {
+                    } elseif (!is_null($this->fieldValues[$fieldName]) && preg_match('#[1-9][0-9]{3}-[1-12]-[1-31] [0-23]:[0-59]:[0-59]#', $this->fieldValues[$fieldName]) === false) {
                         throw new Exception("field value does not match (dateTime) : " . $fieldName);
+                    } elseif (is_null($this->fieldValues[$fieldName]) && $fieldInfos['required']) {
+                        throw new Exception("required field (float) : " . $fieldName . " (" . $fieldInfos['size'] . ")");
                     }
                 } elseif ($fieldInfos['type'] == 'time') {
-                    if (!is_string($this->fieldValues[$fieldName])) {
+                    if (!is_null($this->fieldValues[$fieldName]) && !is_string($this->fieldValues[$fieldName])) {
                         throw new Exception("wrong field type : " . $fieldName . " (expecting " . $fieldInfos['type'] . ") value : " . $this->fieldValues[$fieldName] . " (got " . gettype($this->fieldValues[$fieldName]) . ")");
-                    } elseif (preg_match('#[0-23]:[0-59]:[0-59]#', $this->fieldValues[$fieldName]) === false) {
+                    } elseif (!is_null($this->fieldValues[$fieldName]) && preg_match('#[0-23]:[0-59]:[0-59]#', $this->fieldValues[$fieldName]) === false) {
                         throw new Exception("field value does not match (time) : " . $fieldName);
+                    } elseif (is_null($this->fieldValues[$fieldName]) && $fieldInfos['required']) {
+                        throw new Exception("required field (float) : " . $fieldName . " (" . $fieldInfos['size'] . ")");
                     }
                 }
             }
@@ -445,7 +453,9 @@ abstract class AbstractModel implements \ArrayAccess
         }
 
         // cast new value
-        if (static::$fieldList[$fieldName]['type'] == 'int') {
+        if ($value === null) {
+            $newValue = $value;
+        } elseif (static::$fieldList[$fieldName]['type'] == 'int') {
             $newValue = (int)$value;
         } elseif (static::$fieldList[$fieldName]['type'] == 'float') {
             $newValue = (float)str_replace(',', '.', $value);
