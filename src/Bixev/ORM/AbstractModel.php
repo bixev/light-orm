@@ -461,8 +461,10 @@ abstract class AbstractModel implements \ArrayAccess
             $newValue = (float)str_replace(',', '.', $value);
         } elseif (static::$fieldList[$fieldName]['type'] == 'bool') {
             $newValue = (bool)$value;
-        } elseif (static::$fieldList[$fieldName]['type'] == 'int' && $this->fieldValues[$fieldName] !== null) {
+        } elseif (static::$fieldList[$fieldName]['type'] == 'int') {
             $newValue = (int)$value;
+        } elseif (static::$fieldList[$fieldName]['type'] == 'str' || static::$fieldList[$fieldName]['type'] == 'string') {
+            $newValue = (string)$value;
         } else {
             $newValue = $value;
         }
