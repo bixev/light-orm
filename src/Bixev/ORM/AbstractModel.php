@@ -493,8 +493,7 @@ abstract class AbstractModel implements \ArrayAccess
     {
         // protected fields
         if ($fieldName == 'fieldList' || $fieldName == 'table' || $fieldName == 'id' || $fieldName == 'RecordUpdateDate' || $fieldName == 'errors') {
-            throw new Exception("__get : Tentative de récupération directe de l'attribut : " . $fieldName);
-
+            throw new Exception("__get : forbidden direct read on field : " . $fieldName);
         }
 
         if (array_key_exists($fieldName, static::$fieldList)) {
@@ -507,6 +506,23 @@ abstract class AbstractModel implements \ArrayAccess
             return $return;
         } else {
             throw new Exception("unknown field " . $fieldName);
+        }
+    }
+
+    /**
+     * @param $fieldName
+     * @throws Exception
+     */
+    final public function __isset($fieldName)
+    {
+        if (array_key_exists($fieldName, static::$fieldList)) {
+            return isset($this->fieldValues[$fieldName]);
+        } elseif (array_key_exists($fieldName, static::$relationList)) {
+            $return = $this->getRelationById($fieldName);
+
+            return !empty($return);
+        } else {
+            return false;
         }
     }
 
