@@ -104,29 +104,44 @@ abstract class AbstractModel implements \ArrayAccess
             // method as first argument
             $method = $firstArg;
             $data = $secondArg;
-        } else if (array_search($secondArg, ['new', 'id', 'row']) !== false) {
-            // method as second argument
-            $method = $secondArg;
-            $data = $firstArg;
-        } else if (is_int($firstArg)) {
-            // integer : instanciate with id
-            $method = 'id';
-            $data = $firstArg;
-        } else if (is_array($firstArg)) {
-            // array : instanciate with row
-            $method = 'row';
-            $data = $firstArg;
-        } else if (intval($firstArg) > 0) {
-            // anything else : instanciate with id
-            $method = 'id';
-            $data = intval($firstArg);
         } else {
-            $method = $data = '';
+            if (array_search($secondArg, ['new', 'id', 'row']) !== false) {
+                // method as second argument
+                $method = $secondArg;
+                $data = $firstArg;
+            } else {
+                if (is_int($firstArg)) {
+                    // integer : instanciate with id
+                    $method = 'id';
+                    $data = $firstArg;
+                } else {
+                    if (is_array($firstArg)) {
+                        // array : instanciate with row
+                        $method = 'row';
+                        $data = $firstArg;
+                    } else {
+                        if (intval($firstArg) > 0) {
+                            // anything else : instanciate with id
+                            $method = 'id';
+                            $data = intval($firstArg);
+                        } else {
+                            $method = $data = '';
+                        }
+                    }
+                }
+            }
         }
 
         if ($method == 'new' && $data == '') {
             $this->_instanciationMethod = static::INSTANCIATION_METHOD_NEW;
             $this->id = 0;
+            if (is_array($data)) {
+                foreach ($data as $k => $v) {
+                    if (array_key_exists($k, static::$fieldList)) {
+                        $this->$k = $v;
+                    }
+                }
+            }
         } elseif ($method == 'id' && intval($data) != 0) {
             $this->_instanciationMethod = static::INSTANCIATION_METHOD_ID;
             $this->loadFromId(intval($data));
@@ -399,7 +414,9 @@ abstract class AbstractModel implements \ArrayAccess
                 } elseif ($fieldInfos['type'] == 'date') {
                     if (!is_null($this->fieldValues[$fieldName]) && !is_string($this->fieldValues[$fieldName])) {
                         throw new Exception("wrong field type : " . $fieldName . " (expecting " . $fieldInfos['type'] . ") value : " . $this->fieldValues[$fieldName] . " (got " . gettype($this->fieldValues[$fieldName]) . ")");
-                    } elseif (!is_null($this->fieldValues[$fieldName]) && preg_match('#[1-9][0-9]{3}-[1-12]-[1-31]#', $this->fieldValues[$fieldName]) === false) {
+                    } elseif (!is_null($this->fieldValues[$fieldName]) && preg_match('#[1-9][0-9]{3}-[1-12]-[1-31]#',
+                            $this->fieldValues[$fieldName]) === false
+                    ) {
                         throw new Exception("field value does not match (date) : " . $fieldName);
                     } elseif (is_null($this->fieldValues[$fieldName]) && $fieldInfos['required']) {
                         throw new Exception("required field (float) : " . $fieldName . " (" . $fieldInfos['size'] . ")");
@@ -407,7 +424,9 @@ abstract class AbstractModel implements \ArrayAccess
                 } elseif ($fieldInfos['type'] == 'dateTime') {
                     if (!is_string($this->fieldValues[$fieldName])) {
                         throw new Exception("wrong field type : " . $fieldName . " (expecting " . $fieldInfos['type'] . ") value : " . $this->fieldValues[$fieldName] . " (got " . gettype($this->fieldValues[$fieldName]) . ")");
-                    } elseif (!is_null($this->fieldValues[$fieldName]) && preg_match('#[1-9][0-9]{3}-[1-12]-[1-31] [0-23]:[0-59]:[0-59]#', $this->fieldValues[$fieldName]) === false) {
+                    } elseif (!is_null($this->fieldValues[$fieldName]) && preg_match('#[1-9][0-9]{3}-[1-12]-[1-31] [0-23]:[0-59]:[0-59]#',
+                            $this->fieldValues[$fieldName]) === false
+                    ) {
                         throw new Exception("field value does not match (dateTime) : " . $fieldName);
                     } elseif (is_null($this->fieldValues[$fieldName]) && $fieldInfos['required']) {
                         throw new Exception("required field (float) : " . $fieldName . " (" . $fieldInfos['size'] . ")");
@@ -415,7 +434,9 @@ abstract class AbstractModel implements \ArrayAccess
                 } elseif ($fieldInfos['type'] == 'time') {
                     if (!is_null($this->fieldValues[$fieldName]) && !is_string($this->fieldValues[$fieldName])) {
                         throw new Exception("wrong field type : " . $fieldName . " (expecting " . $fieldInfos['type'] . ") value : " . $this->fieldValues[$fieldName] . " (got " . gettype($this->fieldValues[$fieldName]) . ")");
-                    } elseif (!is_null($this->fieldValues[$fieldName]) && preg_match('#[0-23]:[0-59]:[0-59]#', $this->fieldValues[$fieldName]) === false) {
+                    } elseif (!is_null($this->fieldValues[$fieldName]) && preg_match('#[0-23]:[0-59]:[0-59]#',
+                            $this->fieldValues[$fieldName]) === false
+                    ) {
                         throw new Exception("field value does not match (time) : " . $fieldName);
                     } elseif (is_null($this->fieldValues[$fieldName]) && $fieldInfos['required']) {
                         throw new Exception("required field (float) : " . $fieldName . " (" . $fieldInfos['size'] . ")");

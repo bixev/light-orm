@@ -288,7 +288,7 @@ class API
      *
      * @param mixed $input same input as Model instanciation
      * @param $secondArg
-     * @return mixed
+     * @return AbstractModel
      */
     public function createNew($input = 'new', $secondArg = '')
     {
