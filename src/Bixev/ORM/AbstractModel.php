@@ -215,6 +215,9 @@ abstract class AbstractModel implements \ArrayAccess
         if (static::$_onDuplicateKey == static::ON_DUPLICATE_KEY_IGNORE) {
             $insert = Database::get($this->getDatabaseName())->I(static::$table, $fields, true);
         } elseif (static::$_onDuplicateKey == static::ON_DUPLICATE_KEY_UPDATE) {
+            if (isset($fields['id'])) {
+                unset($fields['id']);
+            }
             $insert = Database::get($this->getDatabaseName())->I(static::$table, $fields, false, true);
         } else {
             $insert = Database::get($this->getDatabaseName())->I(static::$table, $fields);
