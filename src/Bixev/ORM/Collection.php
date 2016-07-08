@@ -190,8 +190,20 @@ class Collection implements \ArrayAccess, \Countable, \Iterator
             return false;
         }
 
+        return $this->containsId($value->getId());
+    }
+
+    /**
+     * Checks whether the given element id is contained in the collection.
+     *
+     * @param int $id
+     * @return boolean true if the given element is contained in the collection,
+     *          false otherwise.
+     */
+    public function containsId($id)
+    {
         foreach ($this as $elt) {
-            if ($value->getId() == $elt->getId()) {
+            if ($id == $elt->getId()) {
                 return true;
             }
         }
@@ -290,7 +302,9 @@ class Collection implements \ArrayAccess, \Countable, \Iterator
     public function orderBy($fieldName, $order = 'ASC')
     {
         if ($this->_storeMethod != static::STORE_METHOD_OBJECT && $this->_storeMethod != static::STORE_METHOD_ROW) {
-            throw new \Exception(__METHOD__ . " : Collection doesn't use objects or row - unable to order by field " . $fieldName);
+            throw new \Exception(
+                __METHOD__ . " : Collection doesn't use objects or row - unable to order by field " . $fieldName
+            );
         }
 
         $class = $this->_className;
@@ -298,62 +312,86 @@ class Collection implements \ArrayAccess, \Countable, \Iterator
         $fieldType = $infos['type'];
         $storeMethod = $this->_storeMethod;
 
-        usort($this->_content, function ($a, $b) use ($fieldName, $fieldType, $order, $storeMethod) {
-            if ($storeMethod == static::STORE_METHOD_OBJECT) {
-                $valueA = $a->$fieldName;
-                $valueB = $b->$fieldName;
-            } else {
-                $valueA = $a[$fieldName];
-                $valueB = $b[$fieldName];
-            }
-            //'int','bool','str','float','date','dateTime'
-            switch ($fieldType) {
-                case'int':
-                case'float':
-                case'bool':
-                    if ($valueA > $valueB) {
-                        $return = 1;
-                    } else {
-                        $return = -1;
-                    }
-                    break;
-                case 'str':
-                    $return = strcmp($valueA, $valueB);
-                    break;
-                case'date':
-                    // compare timestamps
-                    preg_match('!([0-9]+)-([0-9]+)-([0-9]+)!si', $valueA, $aMatches);
-                    preg_match('!([0-9]+)-([0-9]+)-([0-9]+)!si', $valueB, $bMatches);
-                    $d = mktime(0, 0, 0, $aMatches[2], $aMatches[1], $aMatches[3]) - mktime(0, 0, 0, $bMatches[2], $bMatches[1], $bMatches[3]);
-                    if ($d > 0) {
-                        $return = 1;
-                    } else {
-                        $return = -1;
-                    }
-                    break;
-                case'dateTime':
-                    // compare timestamps
-                    preg_match('!([0-9]+)-([0-9]+)-([0-9]+) ([0-9]+):([0-9]+):([0-9]+)!si', $valueA, $aMatches);
-                    preg_match('!([0-9]+)-([0-9]+)-([0-9]+) ([0-9]+):([0-9]+):([0-9]+)!si', $valueB, $bMatches);
-                    $d = mktime($aMatches[4], $aMatches[5], $aMatches[6], $aMatches[2], $aMatches[1], $aMatches[3]) - mktime($bMatches[4], $bMatches[5], $bMatches[6], $bMatches[2], $bMatches[1], $bMatches[3]);
-                    if ($d > 0) {
-                        $return = 1;
-                    } else {
-                        $return = -1;
-                    }
-                    break;
-                default:
-                    throw new \Exception(__METHOD__ . ' : unknown fieldType : ' . $fieldType);
-                    break;
-            }
+        usort(
+            $this->_content,
+            function ($a, $b) use ($fieldName, $fieldType, $order, $storeMethod) {
+                if ($storeMethod == static::STORE_METHOD_OBJECT) {
+                    $valueA = $a->$fieldName;
+                    $valueB = $b->$fieldName;
+                } else {
+                    $valueA = $a[$fieldName];
+                    $valueB = $b[$fieldName];
+                }
+                //'int','bool','str','float','date','dateTime'
+                switch ($fieldType) {
+                    case'int':
+                    case'float':
+                    case'bool':
+                        if ($valueA > $valueB) {
+                            $return = 1;
+                        } else {
+                            $return = -1;
+                        }
+                        break;
+                    case 'str':
+                        $return = strcmp($valueA, $valueB);
+                        break;
+                    case'date':
+                        // compare timestamps
+                        preg_match('!([0-9]+)-([0-9]+)-([0-9]+)!si', $valueA, $aMatches);
+                        preg_match('!([0-9]+)-([0-9]+)-([0-9]+)!si', $valueB, $bMatches);
+                        $d = mktime(0, 0, 0, $aMatches[2], $aMatches[1], $aMatches[3]) - mktime(
+                                0,
+                                0,
+                                0,
+                                $bMatches[2],
+                                $bMatches[1],
+                                $bMatches[3]
+                            );
+                        if ($d > 0) {
+                            $return = 1;
+                        } else {
+                            $return = -1;
+                        }
+                        break;
+                    case'dateTime':
+                        // compare timestamps
+                        preg_match('!([0-9]+)-([0-9]+)-([0-9]+) ([0-9]+):([0-9]+):([0-9]+)!si', $valueA, $aMatches);
+                        preg_match('!([0-9]+)-([0-9]+)-([0-9]+) ([0-9]+):([0-9]+):([0-9]+)!si', $valueB, $bMatches);
+                        $d = mktime(
+                                $aMatches[4],
+                                $aMatches[5],
+                                $aMatches[6],
+                                $aMatches[2],
+                                $aMatches[1],
+                                $aMatches[3]
+                            ) - mktime(
+                                $bMatches[4],
+                                $bMatches[5],
+                                $bMatches[6],
+                                $bMatches[2],
+                                $bMatches[1],
+                                $bMatches[3]
+                            );
+                        if ($d > 0) {
+                            $return = 1;
+                        } else {
+                            $return = -1;
+                        }
+                        break;
+                    default:
+                        throw new \Exception(__METHOD__ . ' : unknown fieldType : ' . $fieldType);
+                        break;
+                }
 
-            // inverse order ?
-            if ($order == 'DESC') {
-                $return = -$return;
-            }
+                // inverse order ?
+                if ($order == 'DESC') {
+                    $return = -$return;
+                }
 
-            return $return;
-        });
+                return $return;
+            }
+        );
     }
 
     /**
