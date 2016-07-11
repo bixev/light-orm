@@ -442,6 +442,11 @@ abstract class AbstractModel implements \ArrayAccess
                         throw new Exception("required field (float) : " . $fieldName . " (" . $fieldInfos['size'] . ")");
                     }
                 }
+            } elseif (
+                ($fieldInfos['type'] == 'str' || $fieldInfos['type'] == 'string')
+                && $fieldInfos['size'] == 0
+            ) {
+                $this->fieldValues[$fieldName] = '';
             }
         }
 
