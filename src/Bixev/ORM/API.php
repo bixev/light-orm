@@ -130,6 +130,8 @@ class API
                         }
                         $conditionSql .= ' ' . $v;
                     }
+                } elseif (empty($value)) {
+                    $conditionSql .= ' FALSE ';
                 } else {
                     $valuesSql = '';
                     foreach ($value as $v) {
