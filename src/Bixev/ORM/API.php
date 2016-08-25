@@ -110,11 +110,12 @@ class API
             }
             $fieldInfo = $class::getFieldInfos($field);
             $conditionSql .= $conditionSql ? ' AND ' : ' WHERE ';
-            $conditionSql .= Database::get($this->getDatabaseName())->backquote($field);
             if (is_null($value)) {
+                $conditionSql .= Database::get($this->getDatabaseName())->backquote($field);
                 $conditionSql .= ' IS NULL';
             } elseif (is_array($value)) {
                 if (isset($value['operator'])) {
+                    $conditionSql .= Database::get($this->getDatabaseName())->backquote($field);
                     $conditionSql .= Database::get($this->getDatabaseName())->p($value['operator']);
                     if (isset($value['value'])) {
                         switch ($fieldInfo['type']) {
@@ -134,22 +135,37 @@ class API
                     $conditionSql .= ' FALSE ';
                 } else {
                     $valuesSql = '';
+                    $canBeNull = false;
                     foreach ($value as $v) {
-                        $valuesSql .= $valuesSql ? ',' : '';
-                        switch ($fieldInfo['type']) {
-                            case 'int':
-                                $v = (int)$v;
-                                break;
-                            case 'float':
-                                $v = (float)$v;
-                                break;
-                            default:
-                                $v = Database::get($this->getDatabaseName())->getConnector()->quote($v);
-                                break;
+                        if ($v === null) {
+                            $canBeNull = true;
+                        } else {
+                            $valuesSql .= $valuesSql ? ',' : '';
+                            switch ($fieldInfo['type']) {
+                                case 'int':
+                                    $v = (int)$v;
+                                    break;
+                                case 'float':
+                                    $v = (float)$v;
+                                    break;
+                                default:
+                                    $v = Database::get($this->getDatabaseName())->getConnector()->quote($v);
+                                    break;
+                            }
+                            $valuesSql .= $v;
                         }
-                        $valuesSql .= $v;
                     }
-                    $conditionSql .= ' IN (' . $valuesSql . ')';
+                    $conditionSql .= '(';
+                    if ($valuesSql != '') {
+                        $conditionSql .= Database::get($this->getDatabaseName())->backquote($field);
+                        $conditionSql .= ' IN (' . $valuesSql . ')';
+                    }
+                    if ($canBeNull) {
+                        $conditionSql .= $valuesSql != '' ? ' OR ' : '';
+                        $conditionSql .= Database::get($this->getDatabaseName())->backquote($field);
+                        $conditionSql .= ' IS NULL';
+                    }
+                    $conditionSql .= ')';
                 }
             } else {
                 switch ($fieldInfo['type']) {
