@@ -179,6 +179,7 @@ class API
                         $v = Database::get($this->getDatabaseName())->getConnector()->quote($value);
                         break;
                 }
+                $conditionSql .= Database::get($this->getDatabaseName())->backquote($field);
                 $conditionSql .= " = " . $v;
             }
         }
