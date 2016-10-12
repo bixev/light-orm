@@ -399,7 +399,8 @@ abstract class AbstractModel implements \ArrayAccess
                                 throw new Exception("too long field (float, before comma) : " . $fieldName . " (" . $fieldInfos['size'] . ")");
                             }
                             if (isset($var[1]) && strlen($var[1]) > $type_var[1]) {
-                                throw new Exception("too long field (float, after comma) : " . $fieldName . " (" . $fieldInfos['size'] . ")");
+                                $this->fieldValues[$fieldName] = round($this->fieldValues[$fieldName], $type_var[1]);
+                                //throw new Exception("too long field (float, after comma) : " . $fieldName . " (" . $fieldInfos['size'] . ")");
                             }
                         } else {
                             if ($fieldInfos['required']) {
