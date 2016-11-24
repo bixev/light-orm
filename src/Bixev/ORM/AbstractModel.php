@@ -445,8 +445,10 @@ abstract class AbstractModel implements \ArrayAccess
                 }
             } elseif (
                 ($fieldInfos['type'] == 'str' || $fieldInfos['type'] == 'string')
-                && $fieldInfos['size'] == 0
+                && ($fieldInfos['size'] == 0 || $fieldInfos['size'] > 50000)
             ) {
+                // TEXT, BLOB cannot have a default value in mysql
+                // but value is required when inserting
                 $this->fieldValues[$fieldName] = '';
             }
         }
