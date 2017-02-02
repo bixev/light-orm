@@ -110,8 +110,13 @@ class Database
             $onDuplicateKeyFields .= $this->backquote($field);
             $onDuplicateKeyFields .= '=';
             $fieldValues .= $fieldValues != '' ? ',' : '';
-            $fieldValues .= $this->_connector->quote($value);
-            $onDuplicateKeyFields .= $this->_connector->quote($value);
+            if ($value === null) {
+                $fieldValues .= 'NULL';
+                $onDuplicateKeyFields .= 'NULL';
+            } else {
+                $fieldValues .= $this->_connector->quote($value);
+                $onDuplicateKeyFields .= $this->_connector->quote($value);
+            }
         }
         if ($update) {
             $onDuplicateKey .= ' ON DUPLICATE KEY UPDATE ' . $onDuplicateKeyFields;
