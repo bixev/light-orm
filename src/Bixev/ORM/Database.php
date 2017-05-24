@@ -105,17 +105,22 @@ class Database
         $onDuplicateKey = $onDuplicateKeyFields = '';
         foreach ($values as $field => $value) {
             $fields .= $fields != '' ? ',' : '';
-            $onDuplicateKeyFields .= $onDuplicateKeyFields != '' ? ',' : '';
             $fields .= $this->backquote($field);
-            $onDuplicateKeyFields .= $this->backquote($field);
-            $onDuplicateKeyFields .= '=';
             $fieldValues .= $fieldValues != '' ? ',' : '';
             if ($value === null) {
                 $fieldValues .= 'NULL';
-                $onDuplicateKeyFields .= 'NULL';
             } else {
                 $fieldValues .= $this->_connector->quote($value);
-                $onDuplicateKeyFields .= $this->_connector->quote($value);
+            }
+            if ($field != 'id') {
+                $onDuplicateKeyFields .= $onDuplicateKeyFields != '' ? ',' : '';
+                $onDuplicateKeyFields .= $this->backquote($field);
+                $onDuplicateKeyFields .= '=';
+                if ($value === null) {
+                    $onDuplicateKeyFields .= 'NULL';
+                } else {
+                    $onDuplicateKeyFields .= $this->_connector->quote($value);
+                }
             }
         }
         if ($update) {
