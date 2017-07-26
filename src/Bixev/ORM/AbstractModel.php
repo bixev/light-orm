@@ -190,7 +190,8 @@ abstract class AbstractModel implements \ArrayAccess
             return 0;
         } else {
             $this->modifiedValues = [];
-
+            // refresh values from database (default values)
+            $this->loadFromId($this->id);
             $this->postSaveActions($isNew);
 
             return $return;
