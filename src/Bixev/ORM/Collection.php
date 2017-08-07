@@ -546,6 +546,18 @@ class Collection implements \ArrayAccess, \Countable, \Iterator
     }
 
     /**
+     * get the first element
+     *
+     * @return AbstractModel
+     */
+    public function shift()
+    {
+        $elt = array_shift($this->_content);
+
+        return $this->convertFromStore($elt);
+    }
+
+    /**
      * @param AbstractModel $storedObj
      * @param string $storeMethod
      * @return AbstractModel
