@@ -212,6 +212,21 @@ class Collection implements \ArrayAccess, \Countable, \Iterator
     }
 
     /**
+     * return the ids of the collection
+     *
+     * @return int[]
+     */
+    public function getIds()
+    {
+        $ids = [];
+        foreach ($this as $elt) {
+            $ids[] = $elt->getId();
+        }
+
+        return $ids;
+    }
+
+    /**
      * @param AbstractModel $value
      * @return int offset, false if not found
      */
