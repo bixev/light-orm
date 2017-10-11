@@ -274,21 +274,28 @@ class Collection implements \ArrayAccess, \Countable, \Iterator
 
         return false;
     }
-
     /**
-     * Extract a slice of $length elements starting at position $offset from the Collection.
+     * like array_slice, extracts subset of data
      *
-     * If $length is null it returns all elements from $offset to the end of the Collection.
-     * Keys have to be preserved by this method. Calling this method will only return the
-     * selected slice and NOT change the elements contained in the collection slice is called on.
+     * @param int  $offset
+     * @param int  $length
+     * @param bool $preserve_keys
      *
-     * @param int $offset
-     * @param int $length
-     * @return array
+     * @return static
      */
-    public function slice($offset, $length = null)
+    public function slice($offset, $length = null, $preserve_keys = true)
     {
-        return array_slice($this->_content, $offset, $length, true);
+        $newData    = new static($this->_className, $this->_storeMethod);
+        $newContent = array_slice($this->_content, $offset, $length, $preserve_keys);
+        foreach ($newContent as $k => $v) {
+            if ($preserve_keys) {
+                $newData[$k] = $v;
+            } else {
+                $newData[] = $v;
+            }
+        }
+
+        return $newData;
     }
 
     /**
